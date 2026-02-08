@@ -36,6 +36,20 @@ public class GreetingsController {
         return new ResponseEntity<Usuario>(user, HttpStatus.CREATED);
     }
 
+    @PutMapping(value = "atualizar")
+    @ResponseBody
+    public ResponseEntity<?> atualizar (@RequestBody Usuario usuario){
+
+        if(usuario.getId() == null){
+            return new ResponseEntity<String>("Id não foi informado!", HttpStatus.OK);
+        }
+
+        Usuario user = usuarioRepository.saveAndFlush(usuario);
+
+        return new ResponseEntity<Usuario>(user, HttpStatus.CREATED);
+    }
+
+
     @DeleteMapping(value = "delete")
     @ResponseBody
     public ResponseEntity<String> delete (@RequestParam Long id){
@@ -56,24 +70,11 @@ public class GreetingsController {
 
 
 
-    @PutMapping(value = "atualizar")
-    @ResponseBody
-    public ResponseEntity<?> atualizar (@RequestBody Usuario usuario){
-
-        if(usuario.getId() == null){
-            return new ResponseEntity<String>("Id não foi informado!", HttpStatus.OK);
-        }
-
-        Usuario user = usuarioRepository.saveAndFlush(usuario);
-
-        return new ResponseEntity<Usuario>(user, HttpStatus.CREATED);
-
-    }
 
 
     @GetMapping(value = "buscarPorNome")
     @ResponseBody
-    public ResponseEntity<List<Usuario>> buscarpornome(@RequestParam (name = "name") String name){
+    public ResponseEntity<List<Usuario>> buscarPorNome( @RequestParam (name = "name") String name){
         List<Usuario> usuario = usuarioRepository.buscarPosNome(name.trim().toUpperCase());
 
         return new ResponseEntity<List<Usuario>>(usuario, HttpStatus.OK);

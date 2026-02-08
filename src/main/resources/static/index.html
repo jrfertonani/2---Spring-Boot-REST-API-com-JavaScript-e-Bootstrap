@@ -7,26 +7,73 @@
 </head>
 <body>
 
-<h3>Spring Boot restApi</h3>
-<form class="row g-3 needs-validation" novalidate>
-    <div class="col-md-4">
-        <label for="id" class="form-label">ID</label>
-        <input type="text" class="form-control" id="id" readonly="readonly">
-    </div>
-    <div class="col-md-4">
-        <label for="nome" class="form-label">NOME</label>
-        <input type="text" class="form-control" id="nome" value="" required>
-    </div>
-    <div class="col-md-4">
-        <label for="idade" class="form-label">IDADE</label>
-        <input type="text" class="form-control" id="idade" value="" required>
-    </div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <h3>Spring Boot restApi</h3>
+        <div class="col-md-10">
+            <form class="row g-3" action="" id="formCadastroUser">
+                <div class="col-md-3">
+                    <label for="id" class="form-label">ID</label>
+                    <input type="text" class="form-control" id="id" readonly="readonly">
+                </div>
+                <div class="col-md-3">
+                    <label for="nome" class="form-label">NOME</label>
+                    <input type="text" class="form-control" id="nome" >
+                </div>
+                <div class="col-md-3">
+                    <label for="idade" class="form-label">IDADE</label>
+                    <input type="text" class="form-control" id="idade">
+                </div>
 
 
-    <div class="col-10">
-        <button class="btn btn-primary" type="submit" onclick="salvarUsuario()">Salvar</button>
+                <div class="col-10">
+                    <button class="btn btn-primary" type="button" onclick="salvarUsuario()">Salvar</button>
+                    <button class="btn btn-secondary" type="button" onclick="limparParaUpdate()">Novo</button>
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalPesquisaUser" type="button" onclick="">Pesquisar</button>
+                </div>
+            </form>
+        </div>
     </div>
-</form>
+</div>
+
+<div class="modal fade" id="modalPesquisaUser" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Pesquisa de usuario</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="md-3">
+                    <label for="nome" class="form-label">Informe o nome:</label>
+                    <input type="text" class="form-control" id="nameBusca" >
+                </div>
+                <br/>
+                <button type="button" class="btn btn-success" onclick="pesquisaUser()">Buscar</button>
+                <br/>
+
+                <table class="table" id="tabelaResultados">
+                    <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Editar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -37,31 +84,92 @@
         var nome = $("#nome").val();
         var idade = $("#idade").val();
 
-    if (nome == "" || idade == "") {
-        alert("Por favor, preencha o nome e a idade.");
-        return;
-    }
-
-
-    $.ajax({
-        method: "POST",
-        url: "salvar",                           // Verifique se o seu @PostMapping no Java é este
-        data: JSON.stringify({
-            id: id,                             //lado esquerdo vem do DB : TELA - direito
-            nome: nome,
-            idade: idade
-        }),
-        contentType: "application/json; charset=utf-8",
-        success: function (response) {
-            $("#id").val(response.id);          // Se o banco gerar o ID, ele volta aqui
-            alert("Salvo com sucesso!");
-        },
-        error: function (xhr, status, error) {
-            alert("Erro ao salvar: " + xhr.responseText);
+        if (nome == "" || idade == "") {
+            alert("Por favor, preencha o nome e a idade.");
+            return;
         }
-    });
+
+
+        $.ajax({
+            method: "POST",
+            url: "salvar",                           // Verifique se o seu @PostMapping no Java é este
+            data: JSON.stringify({
+                id: id,                             //lado esquerdo vem do DB : TELA - direito
+                nome: nome,
+                idade: idade
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (response) {
+                $("#id").val(response.id);          // Se o banco gerar o ID, ele volta aqui
+                alert("Salvo com sucesso!");
+            },
+            error: function (xhr, status, error) {
+                alert("Erro ao salvar: " + xhr.responseText);
+            }
+        });
 
     }
+    function limparParaUpdate(){
+        document.getElementById('nome').value = '';
+        document.getElementById('idade').value = '';
+        document.getElementById('nome').focus();
+    }
+
+    function pesquisaUser() {
+    var nome = $('#nameBusca').val();
+
+        if (nome != null && nome.trim() != '') {
+            $.ajax({
+                method: "GET",
+                url: "buscarPorNome",
+                data: "name=" + nome,
+                success: function (response) {
+                    $('#tabelaResultados > tbody > tr').remove();
+
+                for (var i = 0; i < response.length; i++) {
+                    let usuario = response[i];
+                    $('#tabelaResultados > tbody').append(`
+                        <tr>
+                            <td>${usuario.id}</td>
+                            <td>${usuario.nome}</td>
+                            <td>
+                                <button type="button" class="btn btn-success" onclick="colocarEmEdicao(${usuario.id})">
+                                    Ver
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                }
+                },
+                error: function (xhr, status, error) {
+                    alert("Erro ao buscar: " + xhr.responseText);
+                }
+            });
+        }
+    }
+
+
+
+    function colocarEmEdicao(id) {
+        $.ajax({
+            method: "GET",
+            url: "buscaruserid",
+            data: "iduser=" + id,
+            success: function (response) {
+
+                $("#id").val(response.id);
+                $("#nome").val(response.nome);
+                $("#idade").val(response.idade);
+
+                $('#modalPesquisaUser').modal('hide');
+
+            },
+            error: function (xhr, status, error) {
+                alert("Erro ao buscar usuario por id: " + xhr.responseText);
+            }
+        });
+    }
+
 
 </script>
 
