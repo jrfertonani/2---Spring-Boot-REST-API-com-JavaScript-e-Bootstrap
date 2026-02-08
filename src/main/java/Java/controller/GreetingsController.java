@@ -34,7 +34,6 @@ public class GreetingsController {
         Usuario user = usuarioRepository.save(usuario);
 
         return new ResponseEntity<Usuario>(user, HttpStatus.CREATED);
-
     }
 
     @DeleteMapping(value = "delete")
